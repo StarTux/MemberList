@@ -1,0 +1,24 @@
+main: com.cavetale.memberlist.MemberListPlugin
+name: MemberList
+version: 0.1
+api-version: 1.13
+description: MemberList Plugin
+author: StarTux
+website: https://cavetale.com
+depend: [GenericEvents]
+softdepend: []
+commands:
+  memberlist:
+    aliases: [ml]
+    description: MemberList Command
+    permission: memberlist.memberlist
+    usage: |-
+      /ml add <player>
+      /ml remove <player>
+      /ml check <player>
+      /ml list
+      /ml reload
+permissions:
+  memberlist.memberlist:
+    description: Use /memberlist
+    default: op
