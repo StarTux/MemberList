@@ -34,6 +34,5 @@ names.  It does not work without.
 
 ## Website
 
-Minecraft: <https://cavetale.com>
-Github: <https://github.com/StarTux/MemberList>
-
+- Minecraft: <https://cavetale.com>
+- Github: <https://github.com/StarTux/MemberList>
