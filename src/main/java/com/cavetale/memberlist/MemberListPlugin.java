@@ -27,17 +27,19 @@ public final class MemberListPlugin extends JavaPlugin {
         if (args.length == 0) return false;
         switch (args[0]) {
         case "add": {
-            if (args.length != 2) return false;
-            UUID uuid = GenericEvents.cachedPlayerUuid(args[1]);
-            if (uuid == null) {
-                sender.sendMessage(ChatColor.RED
-                                   + "Unknown player: " + args[1]);
-                return true;
+            if (args.length < 2) return false;
+            for (int i = 1; i < args.length; i += 1) {
+                UUID uuid = GenericEvents.cachedPlayerUuid(args[i]);
+                if (uuid == null) {
+                    sender.sendMessage(ChatColor.RED
+                                       + "Unknown player: " + args[i]);
+                    continue;
+                }
+                String name = GenericEvents.cachedPlayerName(uuid);
+                memberList.people.put(uuid, name);
+                sender.sendMessage("Added: " + name);
             }
-            String name = GenericEvents.cachedPlayerName(uuid);
-            memberList.people.put(uuid, name);
             save();
-            sender.sendMessage("Added: " + name);
             return true;
         }
         case "remove": {
