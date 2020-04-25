@@ -14,10 +14,14 @@ commands:
     permission: memberlist.memberlist
     usage: |-
       /ml add <player>
+      /ml addall - Add everyone online
+      /ml nearby <radius> - List nearby players (for copying)
       /ml remove <player>
       /ml check <player>
       /ml list
       /ml reload
+      /ml clear
+      /ml dump - Dump to yaml
 permissions:
   memberlist.memberlist:
     description: Use /memberlist
