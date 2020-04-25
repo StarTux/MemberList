@@ -42,6 +42,14 @@ public final class MemberListPlugin extends JavaPlugin {
             save();
             return true;
         }
+        case "addall": {
+            for (Player player : getServer().getOnlinePlayers()) {
+                memberList.people.put(player.getUniqueId(), player.getName());
+                sender.sendMessage("Added: " + player.getName());
+            }
+            save();
+            return true;
+        }
         case "remove": {
             if (args.length != 2) return false;
             UUID uuid = GenericEvents.cachedPlayerUuid(args[1]);
