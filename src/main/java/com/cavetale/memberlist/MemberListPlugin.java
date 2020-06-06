@@ -45,10 +45,12 @@ public final class MemberListPlugin extends JavaPlugin {
                                        + "Unknown player: " + args[i]);
                     continue;
                 }
-                String name = GenericEvents.cachedPlayerName(uuid);
-                memberList.people.put(uuid, name);
-                sender.sendMessage("Added: " + name);
-                count += 1;
+                if (!memberList.people.containsKey(uuid)) {
+                    String name = GenericEvents.cachedPlayerName(uuid);
+                    memberList.people.put(uuid, name);
+                    sender.sendMessage("Added: " + name);
+                    count += 1;
+                }
             }
             if (count > 0) {
                 save();
