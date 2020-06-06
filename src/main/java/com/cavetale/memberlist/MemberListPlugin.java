@@ -55,6 +55,8 @@ public final class MemberListPlugin extends JavaPlugin {
             }
             if (count > 0) {
                 save();
+            } else {
+                sender.sendMessage("0 players added");
             }
             return true;
         }
@@ -71,6 +73,8 @@ public final class MemberListPlugin extends JavaPlugin {
             }
             if (count > 0) {
                 save();
+            } else {
+                sender.sendMessage("0 players added");
             }
             return true;
         }
@@ -236,7 +240,7 @@ public final class MemberListPlugin extends JavaPlugin {
                                       String alias, String[] args) {
         if (args.length == 0) return null;
         if (args.length == 1) {
-            return Stream.of("add", "addall", "nearby", "remove", "check",
+            return Stream.of("add", "addall", "nearby", "addnearby", "remove", "check",
                              "list", "reload", "clear", "dump")
                 .filter(s -> s.startsWith(args[0]))
                 .collect(Collectors.toList());
