@@ -152,6 +152,8 @@ public final class MemberListPlugin extends JavaPlugin {
             }
             if (count > 0) {
                 save();
+            } else {
+                sender.sendMessage("0 players added");
             }
             return true;
         }
