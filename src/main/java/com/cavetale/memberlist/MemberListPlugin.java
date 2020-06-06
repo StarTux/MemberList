@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -94,6 +95,7 @@ public final class MemberListPlugin extends JavaPlugin {
             for (Player nearby : player.getWorld().getPlayers()) {
                 Location nearbyLoc = nearby.getLocation();
                 if (nearby.equals(player)) continue;
+                if (nearby.getGameMode() == GameMode.SPECTATOR) continue;
                 if (nearbyLoc.distance(playerLoc) > radius) {
                     continue;
                 }
@@ -109,6 +111,44 @@ public final class MemberListPlugin extends JavaPlugin {
             cb.append(ls);
             cb.insertion(ls);
             player.spigot().sendMessage(cb.create());
+            return true;
+        }
+        case "addnearby": {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("Player expected");
+            }
+            Player player = (Player) sender;
+            if (args.length != 2) {
+                player.sendMessage(ChatColor.RED + "Usage: /ml nearby <radius>");
+                return true;
+            }
+            double radius;
+            try {
+                radius = (double) Long.parseLong(args[1]);
+            } catch (NumberFormatException nfe) {
+                player.sendMessage("Bad radius: " + args[1]);
+                return true;
+            }
+            Location playerLoc = player.getLocation();
+            int count = 0;
+            for (Player nearby : player.getWorld().getPlayers()) {
+                Location nearbyLoc = nearby.getLocation();
+                if (nearby.equals(player)) continue;
+                if (nearby.getGameMode() == GameMode.SPECTATOR) continue;
+                if (nearbyLoc.distance(playerLoc) > radius) {
+                    continue;
+                }
+                UUID uuid = nearby.getUniqueId();
+                if (!memberList.people.containsKey(uuid)) {
+                    String name = nearby.getName();
+                    memberList.people.put(uuid, name);
+                    player.sendMessage("Added: " + name);
+                    count += 1;
+                }
+            }
+            if (count > 0) {
+                save();
+            }
             return true;
         }
         case "remove": {
