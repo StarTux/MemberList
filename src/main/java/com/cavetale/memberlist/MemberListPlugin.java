@@ -1,6 +1,6 @@
 package com.cavetale.memberlist;
 
-import com.winthier.generic_events.GenericEvents;
+import com.winthier.playercache.PlayerCache;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,14 +40,14 @@ public final class MemberListPlugin extends JavaPlugin {
             if (args.length < 2) return false;
             int count = 0;
             for (int i = 1; i < args.length; i += 1) {
-                UUID uuid = GenericEvents.cachedPlayerUuid(args[i]);
+                UUID uuid = PlayerCache.uuidForName(args[i]);
                 if (uuid == null) {
                     sender.sendMessage(ChatColor.RED
                                        + "Unknown player: " + args[i]);
                     continue;
                 }
                 if (!memberList.people.containsKey(uuid)) {
-                    String name = GenericEvents.cachedPlayerName(uuid);
+                    String name = PlayerCache.nameForUuid(uuid);
                     memberList.people.put(uuid, name);
                     sender.sendMessage("Added: " + name);
                     count += 1;
@@ -159,12 +159,12 @@ public final class MemberListPlugin extends JavaPlugin {
         }
         case "remove": {
             if (args.length != 2) return false;
-            UUID uuid = GenericEvents.cachedPlayerUuid(args[1]);
+            UUID uuid = PlayerCache.uuidForName(args[1]);
             if (uuid == null) {
                 sender.sendMessage("Unknown player: " + args[1]);
                 return true;
             }
-            String name = GenericEvents.cachedPlayerName(uuid);
+            String name = PlayerCache.nameForUuid(uuid);
             memberList.people.remove(uuid);
             sender.sendMessage("Removed: " + name);
             save();
@@ -172,12 +172,12 @@ public final class MemberListPlugin extends JavaPlugin {
         }
         case "check": {
             if (args.length != 2) return false;
-            UUID uuid = GenericEvents.cachedPlayerUuid(args[1]);
+            UUID uuid = PlayerCache.uuidForName(args[1]);
             if (uuid == null) {
                 sender.sendMessage("Unknown player: " + args[1]);
                 return true;
             }
-            String name = GenericEvents.cachedPlayerName(uuid);
+            String name = PlayerCache.nameForUuid(uuid);
             if (memberList.people.containsKey(uuid)) {
                 sender.sendMessage(ChatColor.GREEN
                                    + name + " is on the member list.");
@@ -196,7 +196,7 @@ public final class MemberListPlugin extends JavaPlugin {
                 cb.append(memberList.people.values().stream()
                           .collect(Collectors.joining(", ")));
                 cb.insertion(memberList.people.keySet().stream()
-                             .map(GenericEvents::cachedPlayerName)
+                             .map(PlayerCache::nameForUuid)
                              .collect(Collectors.joining(" ")));
                 player.spigot().sendMessage(cb.create());
                 return true;
