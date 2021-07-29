@@ -24,12 +24,12 @@ There is only one permission:
 
 The member list is stored in a text file in JSON format:
 `members.json`.  It contains a mapping from UUIDs to usernames.  At
-runtime however, GenericEvents is used to find cached player UUIDs and
+runtime however, PlayerCache is used to find cached player UUIDs and
 names.  It does not work without.
 
 ## Dependencies
 
-- **GenericEvents** (<https://github.com/StarTux/GenericEvents>) to
+- **PlayerCache** (<https://github.com/StarTux/PlayerCache>) to
     look up cached player UUIDs and names
 
 ## Website
