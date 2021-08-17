@@ -1,9 +1,12 @@
 package com.cavetale.memberlist;
 
+import com.winthier.connect.Connect;
 import com.winthier.playercache.PlayerCache;
+import com.winthier.sql.SQLDatabase;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,60 +24,55 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class MemberListPlugin extends JavaPlugin {
-    MemberList memberList = new MemberList();
-    Json json = new Json(this);
+    private final Json json = new Json(this);
+    private SQLDatabase database;
+    private String listName;
 
     @Override
     public void onEnable() {
-        load();
+        loadConfiguration();
+        database = new SQLDatabase(this);
+        database.registerTables(SQLMember.class);
+        if (!database.createAllTables()) {
+            throw new IllegalStateException("Table creation failed!");
+        }
     }
 
     @Override
-    public boolean onCommand(final CommandSender sender,
-                             final Command command,
-                             final String alias,
-                             final String[] args) {
+    public boolean onCommand(final CommandSender sender, final Command command, final String alias, final String[] args) {
         if (args.length == 0) return false;
         switch (args[0]) {
         case "add": {
             if (args.length < 2) return false;
-            int count = 0;
+            List<SQLMember> list = new ArrayList<>();
             for (int i = 1; i < args.length; i += 1) {
-                UUID uuid = PlayerCache.uuidForName(args[i]);
-                if (uuid == null) {
-                    sender.sendMessage(ChatColor.RED
-                                       + "Unknown player: " + args[i]);
+                PlayerCache player = PlayerCache.forName(args[i]);
+                if (player == null) {
+                    sender.sendMessage(ChatColor.RED + "Unknown player: " + args[i]);
                     continue;
                 }
-                if (!memberList.people.containsKey(uuid)) {
-                    String name = PlayerCache.nameForUuid(uuid);
-                    memberList.people.put(uuid, name);
-                    sender.sendMessage("Added: " + name);
-                    count += 1;
-                }
+                list.add(new SQLMember(listName, player));
             }
-            if (count > 0) {
-                save();
+            final int count = database.insertIgnore(list);
+            if (count == 0) {
+                sender.sendMessage(ChatColor.RED + "No players were added");
+            } else if (count == 1 && list.size() == 1) {
+                sender.sendMessage("" + ChatColor.YELLOW + "Member added: " + list.get(0).getName());
             } else {
-                sender.sendMessage("0 players added");
+                sender.sendMessage("" + ChatColor.YELLOW + count + " players added");
             }
             return true;
         }
         case "addall": {
-            int count = 0;
+            List<SQLMember> list = new ArrayList<>();
             for (Player player : getServer().getOnlinePlayers()) {
-                UUID uuid = player.getUniqueId();
-                if (!memberList.people.containsKey(uuid)) {
-                    String name = player.getName();
-                    memberList.people.put(uuid, name);
-                    sender.sendMessage("Added: " + name);
-                    count += 1;
-                }
+                list.add(new SQLMember(listName, player));
             }
-            if (count > 0) {
-                save();
+            final int count = database.insertIgnore(list);
+            if (count == 0) {
+                sender.sendMessage(ChatColor.RED + "No players were added");
             } else {
-                sender.sendMessage("0 players added");
+                sender.sendMessage("" + ChatColor.YELLOW + count + " players added");
             }
             return true;
         }
@@ -134,7 +132,7 @@ public final class MemberListPlugin extends JavaPlugin {
                 return true;
             }
             Location playerLoc = player.getLocation();
-            int count = 0;
+            List<SQLMember> list = new ArrayList<>();
             for (Player nearby : player.getWorld().getPlayers()) {
                 Location nearbyLoc = nearby.getLocation();
                 if (nearby.equals(player)) continue;
@@ -142,85 +140,102 @@ public final class MemberListPlugin extends JavaPlugin {
                 if (nearbyLoc.distance(playerLoc) > radius) {
                     continue;
                 }
-                UUID uuid = nearby.getUniqueId();
-                if (!memberList.people.containsKey(uuid)) {
-                    String name = nearby.getName();
-                    memberList.people.put(uuid, name);
-                    player.sendMessage("Added: " + name);
-                    count += 1;
-                }
+                list.add(new SQLMember(listName, nearby));
             }
-            if (count > 0) {
-                save();
+            final int count = database.insertIgnore(list);
+            if (count == 0) {
+                sender.sendMessage(ChatColor.RED + "No players were added");
             } else {
-                sender.sendMessage("0 players added");
+                sender.sendMessage("" + ChatColor.YELLOW + count + " players added");
             }
             return true;
         }
         case "remove": {
             if (args.length != 2) return false;
-            UUID uuid = PlayerCache.uuidForName(args[1]);
-            if (uuid == null) {
+            PlayerCache player = PlayerCache.forName(args[1]);
+            if (player == null) {
                 sender.sendMessage("Unknown player: " + args[1]);
                 return true;
             }
-            String name = PlayerCache.nameForUuid(uuid);
-            memberList.people.remove(uuid);
-            sender.sendMessage("Removed: " + name);
-            save();
+            final int count = database.find(SQLMember.class)
+                .eq("list", listName)
+                .eq("uuid", player.uuid)
+                .delete();
+            if (count == 0) {
+                sender.sendMessage(ChatColor.RED + "Not on member list: " + player.name);
+            } else {
+                sender.sendMessage(ChatColor.YELLOW + "Member removed: " + player.name);
+            }
             return true;
         }
         case "check": {
             if (args.length != 2) return false;
-            UUID uuid = PlayerCache.uuidForName(args[1]);
-            if (uuid == null) {
+            PlayerCache player = PlayerCache.forName(args[1]);
+            if (player == null) {
                 sender.sendMessage("Unknown player: " + args[1]);
                 return true;
             }
-            String name = PlayerCache.nameForUuid(uuid);
-            if (memberList.people.containsKey(uuid)) {
-                sender.sendMessage(ChatColor.GREEN
-                                   + name + " is on the member list.");
+            final int count = database.find(SQLMember.class)
+                .eq("list", listName)
+                .eq("uuid", player.uuid)
+                .findRowCount();
+            if (count == 0) {
+                sender.sendMessage(ChatColor.RED + "Not on member list: " + player.name);
             } else {
-                sender.sendMessage(ChatColor.RED
-                                   + name + " is NOT on the member list.");
+                sender.sendMessage(ChatColor.GREEN + "Is a member: " + player.name);
             }
             return true;
         }
         case "list": {
             if (args.length != 1) return false;
+            List<SQLMember> list = findMembers();
             if (sender instanceof Player) {
                 Player player = (Player) sender;
                 ComponentBuilder cb = new ComponentBuilder();
-                cb.append(memberList.people.size() + " people: ");
-                cb.append(memberList.people.values().stream()
+                cb.append(list.size() + " people: ");
+                cb.append(list.stream()
+                          .map(SQLMember::getName)
                           .collect(Collectors.joining(", ")));
-                cb.insertion(memberList.people.keySet().stream()
-                             .map(PlayerCache::nameForUuid)
+                cb.insertion(list.stream()
+                             .map(SQLMember::getName)
                              .collect(Collectors.joining(" ")));
                 player.spigot().sendMessage(cb.create());
                 return true;
             }
-            sender.sendMessage(memberList.people.size() + " people: "
-                               + memberList.people.values().stream()
-                               .collect(Collectors.joining(", ")));
+            sender.sendMessage(list.size() + " people: "
+                               + (list.stream()
+                                  .map(SQLMember::getName)
+                                  .collect(Collectors.joining(", "))));
             return true;
         }
         case "reload": {
-            load();
-            sender.sendMessage("reloaded!");
+            loadConfiguration();
+            sender.sendMessage("Config reloaded!");
+            return true;
+        }
+        case "save": {
+            saveDefaultConfig();
+            sender.sendMessage("Config saved to disk!");
             return true;
         }
         case "clear": {
-            memberList.people.clear();
-            save();
-            sender.sendMessage("Member list cleared");
+            final int count = database.find(SQLMember.class)
+                .eq("list", listName)
+                .delete();
+            if (count == 0) {
+                sender.sendMessage(ChatColor.RED + "Member list empty!");
+            } else {
+                sender.sendMessage("" + ChatColor.YELLOW + count + " members cleared");
+            }
             return true;
         }
         case "dump": {
             YamlConfiguration cfg = new YamlConfiguration();
-            for (Map.Entry<UUID, String> entry : memberList.people.entrySet()) {
-                cfg.set(entry.getKey().toString(), entry.getValue());
+            Map<UUID, String> map = new HashMap<>();
+            List<SQLMember> list = findMembers();
+            for (SQLMember row : list) {
+                cfg.set(row.getUuid().toString(), row.getName());
+                map.put(row.getUuid(), row.getName());
                 File file = new File(getDataFolder(), "dump.yml");
                 try {
                     cfg.save(file);
@@ -229,8 +244,9 @@ public final class MemberListPlugin extends JavaPlugin {
                     sender.sendMessage("An error has occured. See console.");
                     return true;
                 }
+                json.save("dump.json", map, true);
             }
-            sender.sendMessage("Dumped to dump.yml");
+            sender.sendMessage("Dumped to dump.json and dump.yml");
             return true;
         }
         default: return false;
@@ -243,19 +259,23 @@ public final class MemberListPlugin extends JavaPlugin {
         if (args.length == 0) return null;
         if (args.length == 1) {
             return Stream.of("add", "addall", "nearby", "addnearby", "remove", "check",
-                             "list", "reload", "clear", "dump")
+                             "list", "reload", "clear", "dump", "save")
                 .filter(s -> s.startsWith(args[0]))
                 .collect(Collectors.toList());
         }
         return null;
     }
 
-    void save() {
-        json.save("members.json", memberList, true);
+    private void loadConfiguration() {
+        reloadConfig();
+        listName = getConfig().getString("list");
+        if (listName == null || listName.isEmpty()) {
+            listName = Connect.getInstance().getServerName();
+        }
+        getLogger().info("List name: " + listName);
     }
 
-    void load() {
-        memberList = json.load("members.json", MemberList.class, MemberList::new);
-        if (memberList == null) memberList = new MemberList();
+    public List<SQLMember> findMembers() {
+        return database.find(SQLMember.class).eq("list", listName).findList();
     }
 }

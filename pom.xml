@@ -16,7 +16,6 @@
     <finalName>${project.name}</finalName>
     <plugins>
 
-      <!-- Java 8 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -71,6 +70,22 @@
     <dependency>
       <groupId>com.winthier.playercache</groupId>
       <artifactId>playercache</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Connect -->
+    <dependency>
+      <groupId>com.winthier.connect</groupId>
+      <artifactId>connect</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- SQL -->
+    <dependency>
+      <groupId>com.winthier.sql</groupId>
+      <artifactId>sql</artifactId>
       <version>0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
