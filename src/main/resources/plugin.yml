@@ -5,7 +5,7 @@ api-version: 1.17
 description: Member List Plugin
 author: StarTux
 website: https://cavetale.com
-depend: [Connect, SQL, PlayerCache]
+depend: [Core, Connect, SQL, PlayerCache]
 softdepend: []
 commands:
   memberlist:
