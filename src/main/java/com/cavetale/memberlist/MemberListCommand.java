@@ -313,11 +313,11 @@ public final class MemberListCommand extends AbstractCommand<MemberListPlugin> {
                     .replace("%oplayers%", list.stream().filter(r -> r != row).map(SQLMember::getName).collect(Collectors.joining(" ")))
                     .replace("%ouuids%", list.stream().filter(r -> r != row).map(SQLMember::getUuid).map(UUID::toString).collect(Collectors.joining(" ")));
                 plugin.getLogger().info("Running console command: " + cmd2);
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd2);
+                Bukkit.dispatchCommand(sender, cmd2);
             }
         } else if (runType == RunType.ONCE) {
             plugin.getLogger().info("Running console command: " + cmd);
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+            Bukkit.dispatchCommand(sender, cmd);
         } else {
             throw new IllegalStateException("runType=" + runType);
         }
