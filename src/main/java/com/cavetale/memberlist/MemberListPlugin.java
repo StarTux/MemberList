@@ -14,12 +14,14 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class MemberListPlugin extends JavaPlugin {
+    protected static MemberListPlugin instance;
     protected final Json json = new Json(this);
     protected SQLDatabase database;
     @Getter protected String listName;
 
     @Override
     public void onEnable() {
+        instance = this;
         loadConfiguration();
         database = new SQLDatabase(this);
         database.registerTables(SQLMember.class);
