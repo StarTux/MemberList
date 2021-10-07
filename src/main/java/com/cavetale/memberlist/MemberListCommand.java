@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -144,7 +145,7 @@ public final class MemberListCommand extends AbstractCommand<MemberListPlugin> {
         sender.sendMessage(Component.text()
                            .content("List " + listName + " has " + list.size() + " members: ")
                            .color(NamedTextColor.YELLOW)
-                           .append(Component.join(Component.space(),
+                           .append(Component.join(JoinConfiguration.separator(Component.space()),
                                                   list.stream()
                                                   .map(row -> Component.text()
                                                        .content(row.getName())
