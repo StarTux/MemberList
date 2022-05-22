@@ -1,13 +1,18 @@
 main: com.cavetale.memberlist.MemberListPlugin
 name: MemberList
+
 version: 0.1
-api-version: 1.17
+api-version: 1.18
+
 description: Member List Plugin
 author: StarTux
 website: https://cavetale.com
+
 depend: [Core, Connect, SQL, PlayerCache]
 softdepend: []
+
 commands:
+
   memberlist:
     aliases: [ml]
     description: MemberList Command
@@ -23,7 +28,9 @@ commands:
       /ml reload
       /ml clear
       /ml dump - Dump to yaml
+
 permissions:
+
   memberlist.memberlist:
     description: Use /memberlist
     default: op

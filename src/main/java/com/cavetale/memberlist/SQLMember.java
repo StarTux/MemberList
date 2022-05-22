@@ -1,6 +1,7 @@
 package com.cavetale.memberlist;
 
 import com.winthier.playercache.PlayerCache;
+import com.winthier.sql.SQLRow;
 import java.util.Date;
 import java.util.UUID;
 import javax.persistence.Column;
@@ -13,7 +14,7 @@ import org.bukkit.entity.Player;
 @Data
 @Table(name = "members",
        uniqueConstraints = {@UniqueConstraint(columnNames = {"list", "uuid"})})
-public final class SQLMember {
+public final class SQLMember implements SQLRow {
     @Id
     private Integer id;
     @Column(nullable = false, length = 16)
