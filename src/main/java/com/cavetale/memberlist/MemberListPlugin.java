@@ -1,5 +1,6 @@
 package com.cavetale.memberlist;
 
+import com.cavetale.core.util.Json;
 import com.winthier.connect.Connect;
 import com.winthier.sql.SQLDatabase;
 import java.io.File;
@@ -15,7 +16,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class MemberListPlugin extends JavaPlugin {
     protected static MemberListPlugin instance;
-    protected final Json json = new Json(this);
     protected SQLDatabase database;
     @Getter protected String listName;
 
@@ -24,7 +24,7 @@ public final class MemberListPlugin extends JavaPlugin {
         instance = this;
         loadConfiguration();
         database = new SQLDatabase(this);
-        database.registerTables(SQLMember.class);
+        database.registerTables(List.of(SQLMember.class));
         if (!database.createAllTables()) {
             throw new IllegalStateException("Table creation failed!");
         }
@@ -57,7 +57,7 @@ public final class MemberListPlugin extends JavaPlugin {
             } catch (IOException ioe) {
                 throw new UncheckedIOException(ioe);
             }
-            json.save(name + ".json", map, true);
+            Json.save(new File(getDataFolder(), name + ".json"), map, true);
         }
     }
 }
