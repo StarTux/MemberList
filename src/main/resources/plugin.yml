@@ -2,7 +2,7 @@ main: com.cavetale.memberlist.MemberListPlugin
 name: MemberList
 
 version: 0.1
-api-version: 1.18
+api-version: '1.21'
 
 description: Member List Plugin
 author: StarTux
